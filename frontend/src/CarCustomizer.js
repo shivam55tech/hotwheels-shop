@@ -1,4 +1,3 @@
-// CarCustomizer.js
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import * as THREE from 'three';
@@ -10,9 +9,13 @@ function CarCustomizer() {
   const [color, setColor] = useState('#ff0000');
 
   useEffect(() => {
+    // Copy the ref value to a local variable
+    const currentMount = mountRef.current;
+    if (!currentMount) return;
+
     // Set dimensions based on the container size.
-    const width = mountRef.current.clientWidth;
-    const height = mountRef.current.clientHeight;
+    const width = currentMount.clientWidth;
+    const height = currentMount.clientHeight;
 
     // Initialize scene, camera, and renderer.
     const scene = new THREE.Scene();
@@ -20,15 +23,15 @@ function CarCustomizer() {
     camera.position.z = 5;
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
-    mountRef.current.appendChild(renderer.domElement);
+    currentMount.appendChild(renderer.domElement);
 
-    // Create a simple car model (as a cube).
+    // Create a simple model (a cube) representing the car.
     const geometry = new THREE.BoxGeometry(2, 1, 1);
     const material = new THREE.MeshBasicMaterial({ color });
     const car = new THREE.Mesh(geometry, material);
     scene.add(car);
 
-    // Animation loop to rotate the car model.
+    // Animation loop for rendering
     const animate = () => {
       requestAnimationFrame(animate);
       car.rotation.y += 0.01;
@@ -36,18 +39,19 @@ function CarCustomizer() {
     };
     animate();
 
-    // Cleanup function on unmount.
+    // Cleanup function using the captured variable 'currentMount'
     return () => {
-      mountRef.current.removeChild(renderer.domElement);
+      if (currentMount && renderer.domElement) {
+        currentMount.removeChild(renderer.domElement);
+      }
     };
-  }, [color]);
+  }, [color]); // If you add more dependencies, include them here.
 
   const handleColorChange = (e) => {
     setColor(e.target.value);
   };
 
   const handleBuy = () => {
-    // Navigate to checkout page; pass productId and selected color.
     navigate('/checkout', { state: { productId, color } });
   };
 
